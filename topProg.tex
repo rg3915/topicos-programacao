@@ -1,0 +1,1185 @@
+\documentclass[a4paper]{memoir}
+\usepackage[utf8]{inputenc}
+\usepackage[comandos,teorema]{../../senac/preambulo}
+\usepackage{minted}
+\usepackage{algpseudocode,algorithm}
+\usepackage{hyperref}
+\hypersetup{pdfpagelayout=TwoPageLeft,
+  bookmarksopen=true,
+  colorlinks=true,
+  urlcolor=blue,
+  linkcolor=black,
+  pdftitle={T\'opicos de Programa\c c\~ao},
+  pdfauthor={R\'egis S. Santos}
+}
+
+% Ambiente C
+\newminted{c}{linenos}
+
+\theorembodyfont{\normalfont\upshape}
+% \newtheorem{ex}{Exemplo}
+\newtheorem{eex}{Exerc\'icio}
+
+% Tamanho do vetor
+\newcommand{\nv}{0 \ldots n-1}
+\newcommand{\un}{1 \ldots n}
+
+\algrenewcommand\algorithmicend{\textbf{fim}}
+\algrenewcommand\algorithmicdo{\textbf{faça}}
+\algrenewcommand\algorithmicwhile{\textbf{enquanto}}
+\algrenewcommand\algorithmicfor{\textbf{para}}
+\algrenewcommand\algorithmicif{\textbf{se}}
+\algrenewcommand\algorithmicthen{\textbf{então}}
+\algrenewcommand\algorithmicelse{\textbf{senão}}
+\algrenewcommand\algorithmicreturn{\textbf{devolve}}
+\algrenewcommand\algorithmicfunction{\textbf{função}}
+\algrenewcommand\algorithmicrepeat{\textbf{repita}}
+\algrenewcommand\algorithmicuntil{\textbf{até que}}
+
+\algrenewtext{EndWhile}{\algorithmicend\ \algorithmicwhile}
+\algrenewtext{EndFor}{\algorithmicend\ \algorithmicfor}
+\algrenewtext{EndIf}{\algorithmicend\ \algorithmicif}
+\algrenewtext{EndFunction}{\algorithmicend\ \algorithmicfunction}
+
+\algnewcommand\algorithmicto{\textbf{até}}
+\algrenewtext{For}[3]%
+{\algorithmicfor\ #1 $\gets$ #2 \algorithmicto\ #3 \algorithmicdo}
+
+
+\title{T\'opicos de Programa\c c\~ao}
+\author{R\'egis S. Santos}
+\date{\the\year}
+\makeindex
+
+\begin{document}
+
+%suprime numeracao de rodape na capa
+\begin{titlingpage}
+  \maketitle
+\end{titlingpage}
+
+\tableofcontents
+
+\chapter{Introdução}
+
+Livros recomendados: \cite[Cormen]{cormen2001introduction}, \cite[Varizani]{dasgupta2006algorithms}, \cite[Feofiloff]{feofiloff2009algoritmos}.
+
+\section{Lembrando algumas estruturas importantes}
+
+\subsubsection{Um tipo de variável diferente}
+
+\verb|unsigned int| $= \mathbb N$
+
+\subsection{Registro em C}
+\index{Registro em C}
+
+Para criar novos tipos de variáveis.
+
+\begin{ex}
+Um registro \verb|x| com três campos inteiros.
+
+\begin{minted}{c}
+struct{
+  int dia, mes, ano;
+} x;
+\end{minted}
+
+\end{ex}
+
+\begin{ex}
+Ponto no plano cartesiano.
+
+\begin{minted}{c}
+struct{
+  int x,y;
+} p1;
+\end{minted}
+
+\end{ex}
+
+\begin{ex}
+Dando nome ao registro.
+
+\begin{minted}{c}
+struct ponto{
+  int x,y;
+};
+struct ponto p1;
+struct ponto p2;
+\end{minted}
+
+\end{ex}
+
+\begin{ex}
+Acessando os campos do registro.
+
+\begin{minted}{c}
+p1.x = 3;
+p1.y = 2;
+\end{minted}
+
+\end{ex}
+
+\section{Ponteiro}
+\index{Ponteiro}
+
+Endereço: \&
+
+\begin{ex}
+\verb|x| armazenando o endereço de \verb|y|.
+
+\begin{minted}{c}
+int *x;
+int y = 40;
+/* x armazena o endereco de y*/
+x = &y;
+printf("%d%d",y,*x);
+\end{minted}
+
+\end{ex}
+
+\section{Esqueleto em C}
+\index{Esqueleto em C}
+
+\begin{ccode}
+#include<stdio.h>
+int main(){
+  /* declaracao de variaveis */
+  /* corpo do programa */
+  return 0;
+}
+\end{ccode}
+
+\section{Vetores}
+\index{Vetor}
+
+\textbf{Notação}: Se a lista de números está armazenada nas posições $0,1,\ldots,n-1$, diremos que $v[\nv]$ é um \emph{vetor} de inteiros.
+
+Devemos ter $0 \mei n \mei N$.
+
+Se $n = 0$, então $v$ está vazio.
+
+Se $n = N$, então $v$ está cheio.
+
+\section{Operações com vetores}
+\index{Operação com!vetor(es)}
+
+\subsection{Busca}
+\index{Operação!Busca}
+\index{Busca}
+
+Dado um inteiro $x$ e um vetor de inteiros $v[\nv]$, considere o problema de encontrar um índice $k$ tal que $v[k] = x$.
+
+\begin{ex}
+Sejam $x = 987, N = 8$ e $n = 5$.
+
+\tkzfigonly{figvetor01}
+
+Então $k = -1$.
+
+\newpage
+
+\begin{minted}{c}
+/* Esta funcao recebe um numero x e um vetor v[0..n-1]
+   tal que v[k] = x. Se tal k nao existe, devolve -1. */
+
+int Busca(int x, int v[], int n){
+  int k;
+  k = n - 1;
+  while (k >= 0 && v[k] != x)
+    k--;
+  return k;
+}
+\end{minted}
+
+\end{ex}
+
+\subsection{Remoção}
+\index{Operação!Remoção}
+\index{Remoção}
+
+Consiste em retirar do vetor $v[\nv]$ o elemento que tem índice $k$ e fazer com que o vetor resultante tenha índices $0,1,\ldots,n-2$.
+
+\begin{ex}
+Vamos remover o elemento de índice $k = 3$.
+
+\tkzfigonly{figvetor02}
+
+\begin{minted}{c}
+/* Remove o elemento de indice k do vetor v[0...n-1]
+   e devolve o novo valor de n. A funcao supoe 0 <= k < n.*/
+
+int Remove(int k, int v[], int n){
+  int j;
+  for (j = k; j < n - 1; j++)
+    v[j] = v[j+1];
+  return n - 1;
+}
+\end{minted}
+
+\end{ex}
+
+\subsection{Inserção}
+\index{Operação!Inserção}
+\index{Inserção}
+
+Consiste em introduzir um novo elemento $y$ entre a posição de índice $k-1$ e $k$ no vetor $v[\nv]$. Isto faz sentido somente quando $1 \mei k \mei n - 1$.
+
+Quando $k = 0$, inserimos no início de $v$.
+
+Quando $k = n$, inserimos no final de $v$.
+
+\newpage
+
+\begin{minted}{c}
+/* Insere y entre as posicoes k-1 e k de v[0...n-1]
+   e devolve o novo valor de n. A funcao supoe 0 <= k <= n.*/
+
+int Insere(int k, int y, int v[], int n){
+  int j;
+  for (j = n; j > k; j--)
+    v[j] = v[j-1];
+  v[k] = y;
+  return n + 1;
+}
+\end{minted}
+
+\begin{ex}
+Sejam $k = 2$ e $y = 133$.
+
+\tkzfigonly{figvetor03}
+\end{ex}
+
+\subsection{Alocação dinâmica de vetor em C}
+\index{Alocação dinâmica de!vetor}
+
+\begin{minted}{c}
+int *v;
+v = (int*) malloc(100*sizeof(int));
+\end{minted}
+
+\section{Matrizes bidimensionais}
+\index{Matriz}
+
+São estruturas de dados implementadas como vetores de vetores, com $m$ linhas e $n$ colunas.
+
+\begin{minted}{c}
+A[i][j] = 1;
+\end{minted}
+
+\subsection{Alocação dinâmica de matriz em C}
+\index{Alocação dinâmica de!matriz}
+
+\begin{minted}{c}
+int **A;
+int i;
+A = (int**) malloc(m*sizeof(int*));
+for (i = 0; i < m; i++)
+  A[i] = (int*) malloc(n*sizeof(int));
+\end{minted}
+
+\newpage
+
+\subsection{Busca em matriz}
+\index{Operação!Busca}
+\index{Busca em matriz}
+
+Dado um inteiro $x$ e uma matriz de inteiros $A$ com $m$ linhas e $n$ colunas, encontre dois índices $kl$ e $kc$ tal que $A[kl][kc] = x$.
+
+\begin{minted}{c}
+void BuscaMatriz(int x, int **A, int m, int n, int *kl, int *kc){
+  for (*kl = n-1; *kl >= 0; (*kl)--) {
+    *kc = n - 1;
+    while (*kc >= 0 && A[*kl][*kc] != x)
+      (*kc)--;
+    if (*kc != -1)
+      return;
+  }
+}
+\end{minted}
+
+\section{Exercícios}
+
+\begin{eex}
+Criar um registro \emph{IndiceMatriz} com campos inteiros \emph{linha} e \emph{coluna} e reescrever a função \verb|BuscaMatriz| usando tal registro.
+\end{eex}
+
+\chapter{Análise Assintótica}
+\index{Análise Assintótica}
+
+Análise de algoritmos, olhe para expressões como $n+10$ e $n^2+1$ ignorando valores pequenos para $n$. O que interessa são os valores \emph{grandes} para $n$.
+
+Dizemos que as funções $n^2$, $\frac{3}{4}n^2$, $9n^2$, $1000n^2$, $\frac{1}{100}n^2 + 100n$, crescem com a mesma velocidade e por isso são \emph{equivalentes}, quando $n$ é muito grande.
+
+Na análise assintótica todas as funções mencionadas anteriomente estão na mesma \emph{ordem de grandeza}.
+
+Nos interessa apenas olhar para as funções assintóticamente \emph{não negativas}, isto é, funções $f$ tais que $f(n) \mai 0$ para todo $n$ suficientemente grande.
+
+\section{Ordem O}
+
+\begin{defn}
+Dadas funções assintóticamentes não negativas $f$ e $g$, dizemos que \emph{$f$ está na ordem O de $g$} e escrevemos $f = O(g)$, se $f(n) \mei c f(n)$ para algum número positivo $c$ e para todo $n$ suficientemente grande.	Ou seja, existe um número positivo $c$ e um número $n_0$ tal que $f(n) \mei c g(n), \forall n > n_0$.
+
+\end{defn}
+
+\begin{ex}
+Se $f(n) \mei 999 g (n), \forall n \mai 1000$ então $f$ está na ordem O de $g$. $f = O(g)$.
+\end{ex}
+
+\begin{ex}
+Suponha que $f(n) = 3 + \frac{2}{n}$ e que $g(n) = n^0 = 1$
+\end{ex}
+
+\begin{sol}
+$f(n) = 3 + \frac{2}{n} \mei 3 + 1 = 4$
+\end{sol}
+
+\begin{ex}
+Suponha que $f(n) = n^3$ e que $g(n) = 200n^2$.
+\end{ex}
+
+\begin{sol}
+Suponha que $f = O(g)$. Então existe um número positivo $c$ e um número $n_0$ tal que $f(n) \mei c g(n), \forall n > n_0$.
+
+Dividindo por $c$ ambos os lados da desigualdade, temos\\
+$\frac{1}{c} f(n) \mei g(n), \forall n > n_0$.
+
+Substituindo $f$ e $g$, temos $\frac{1}{c}n^3 \mei 200n^2, \forall n > n_0$.
+
+\[
+\frac{1}{c}n \mei 200, \forall n > n_0 \imp \frac{n}{200} \mei c, \forall n > n_0
+\]
+
+Absurdo. Portanto, $f$ não está na ordem $O(g).$
+\end{sol}
+
+\section{Ordem Omega}
+
+Quando escrevemos $f = O(g)$ queremos dizer que ``a função $f$ está sempre por baixo, ou tocando a função $g$'', a partir de um determinado ponto.
+
+Quando escrevemos $f = \Omega(g)$ queremos dizer que ``a função $f$ está por cima, ou tocando a função $g$'', a partir de um determinado ponto.
+
+\begin{defn}
+Dadas funções assintóticamente não negativas $f$ e $g$, dizemos que \emph{$f$ está na ordem Omega de $g$} $(f = \Omega(g))$, se $f(n) \mai c g(n)$ para algum $c$ positivo e para todo $n$ suficientemente grande. Ou seja, $\exists c > 0$ e $n_0$ tais que $f(n) \mai c g(n), \forall n > n_0$.
+\end{defn}
+
+\begin{ex}
+Se $f(n) \mai \frac{g(n)}{1000}, \forall n \mai 888$, então $f$ está na ordem Omega de $g$.
+\end{ex}
+
+\begin{sol}
+Devemos provar que se $f = O(g)$, então $g = \Omega(f)$.
+
+$\frac{1}{c}f(n) \mei g(n), \forall n > n_0$.
+\end{sol}
+
+\begin{ex}
+Prove que $100 \lg n - 10n + 2n \lg n$ está na ordem de Omega de $n \lg n$.
+\end{ex}
+
+\begin{sol}
+\[
+\scriptstyle
+f(n) = 100 \lg n - 10n + n \lg n + n \lg n \mai 100 \lg n - 10n + 10n + n \lg n \mai 1n \lg n, \forall n \mai 1024
+\]
+
+\[
+\therefore f(n) = \Omega(n \lg n)
+\]
+
+\end{sol}
+
+\section{Ordem Theta}
+
+\begin{defn}
+Dizemos que $f = \Theta(g)$, se $f = O(g)$ e $f = \Omega(g)$. Isto significa que existem números positivos $c$ e $d$, tais que $cg(n) \mei f(n) \mei dg(n)$, para todo $n$ suficientemente grande.
+\end{defn}
+
+
+\chapter{Recorrência}
+\index{Recorrência}
+
+\begin{defn}
+Uma \emph{recorrência} é uma expressão escrita em termos dela mesma. 
+\end{defn}
+
+Por exemplo, $F(n) = F(n-1) + 3n + 2$. O valor de $F(n)$ depende do valor de $F(n-1)$.
+
+Resolver uma recorrência $F$ é encontrar uma ``fórmula fechada'' para $F$ que não depende de $F$ e que dependa somente dos seus parâmetros.
+
+\begin{ex}
+Suponha uma recorrência com valor inicial $F(1) = 1$ e\\
+$F(n) = F(n-1) + 3n + 2$.
+\end{ex}
+
+\begin{sol}
+
+\begin{center}
+\begin{tabular}{|c*{6}{|c}}
+\hline
+$n$ & $1$ & $2$ & $3$ & $4$ & $5$\\ \hline
+$F(n)$ & $1$ & $9$ & $20$ & x & x\\ \hline
+\end{tabular}
+\end{center}
+
+A fórmula é
+
+\[
+F(n) = \frac{3}{2}n^2 + \frac{7}{2}n - 4
+\]
+
+Façamos a prova por indução:
+
+Para $n = 1$, temos $F(1) = \frac{3}{2}.1^2 + \frac{7}{2}.1 - 4 = 1$.
+
+Tome $n > 1$ e suponha que a fórmula fechada vale para $n-1$.
+
+\begin{eqnarray*}
+  F(n) &=& F(n - 1) + 3n + 2 \hfill \\
+   &=& \frac{3}{2}(n - 1)^2  + \frac{7}{2}(n - 1) - 4 + 3n + 2 \hfill \\
+   &=& \frac{3}{2}(n^2  - 2n + 1) + \frac{7}{2}(n - 1) - 4 + 3n + 2 \hfill \\
+   &=& \frac{{3n^2  - 6n + 3 + 7n - 7 - 8 + 6n + 4}}{2} \hfill \\
+   &=& \frac{3}{2}n^2  + \frac{7}{2}n - 4 \hfill \\ 
+\end{eqnarray*} 
+
+\newpage 
+
+Vamos mostrar que $F(n) = \frac{3}{2}n^2 + \frac{7}{2}n - 4 = \Theta(n^2)$.
+
+Primeiro vamos mostrar que $F(n) = O(n^2)$.
+
+\[
+\begin{gathered}
+  F(n) = \frac{3}{2}n^2  + \frac{7}{2}n - 4 \hfill \\
+  2F(n) = 3n^2  + 7n - 8 \hfill \\
+  2F(n) \mei 3n^2  + 7n,\forall n \mai 0 \hfill \\
+  2F(n) \mei 3n^2  + 7n^2  = 10n^2 ,\forall n \mai 0 \hfill \\
+  F(n) \mei 5n^2 ,\forall n \mai 0 \hfill \\ 
+\end{gathered} 
+\]
+
+Logo $n_0 = 0$ e $c = 5$.
+
+Vamos mostrar que $F(n) = \Omega(n^2)$.
+
+\[
+F(n) = \frac{3}{2}n^2  + \frac{7}{2}n - 4 \mai \frac{3}{2}n^2 ,\forall n > 2
+\]
+
+Logo $n_0 = 2$ e $c = \frac{3}{2}$.
+
+\end{sol}
+
+\begin{ex}
+Suponha a recorrência $F(n) = F \left( \frac{n}{2} \right) + 3$ com valor inicial $F(1) = 5$.
+\end{ex}
+
+\begin{sol}
+\begin{center}
+\begin{tabular}{|c*{7}{|c}}
+\hline
+$n$ & $1$ & $2$ & $3$ & $4$ & $5$ & $6$\\ \hline
+$F(n)$ & $5$ & $8$ & ND & $11$ & ND & ND\\ \hline
+\end{tabular}
+\end{center}
+
+Podemos escrever $n = 2^k, k \in \N$.
+
+\begin{equation*}
+  F(n) =
+  \begin{cases}
+    F(1)=5 \\
+    F(2^k) = F(2^{k-1}) + 3
+  \end{cases}
+\end{equation*}
+
+\begin{center}
+\begin{tabular}{|c*{5}{|c}}
+\hline
+$k$ & $0$ & $1$ & $2$ & $3$\\ \hline
+$F(2^k)$ & $5$ & $8$ & $11$ & x\\ \hline
+\end{tabular}
+\end{center}
+
+\begin{eqnarray*}
+  F(2^k) &=& F(2^{k - 1}) + 3 \hfill \\
+   &=& F(2^{k - 2}) + 2.3 \hfill \\
+   &=& F(2^{k - 3}) + 3.3 \hfill \\
+   &=& F(2^{k - 4}) + 4.3 \hfill \\
+   &=& F(2^{k - 5}) + 5.3 \hfill \\ 
+\end{eqnarray*}
+
+\newpage 
+
+Continuando este processo até o expoente de $2$, dentro de $F$, for igual a $0$, temos:
+
+\begin{eqnarray*}
+  F(2^k) &=& F(2^{k - k}) + k.3 \hfill \\
+   &=& F(1) + k.3 \hfill \\
+   &=& 5 + 3k \hfill \\ 
+\end{eqnarray*}
+
+Escrevendo $F$ em função de $n$, temos:
+
+\begin{eqnarray*}
+  n &=& 2^k  \hfill \\
+  \lg n &=& \lg 2^k  \hfill \\
+  \lg n &=& k \hfill \\ 
+\end{eqnarray*}
+
+Portanto, $F(n) = 5 + 3 \lg n$. ($\lg = \log _2$)
+
+\
+
+Mostre que $F(n) = 5 + 3 \lg n = \Theta(\lg n)$
+
+Vamos mostrar que $F(n) = O(\lg n)$.
+
+\begin{eqnarray*}
+  F(n) &=& 3\lg n + 5 \hfill \\
+  &\mei& 3 + \lg n + 5\lg n \hfill \\
+   &=& 8\lg n,\forall n > 1 \hfill \\ 
+\end{eqnarray*}
+
+Vamos mostrar que $F(n) = \Omega(\lg n)$.
+
+\[
+F(n) = 3\lg n + 5 \mei 3 \lg n,\forall n \mai 1
+\]
+
+\end{sol}
+
+
+\chapter{Algoritmos Recursivos}
+\index{Recursão}
+
+Algoritmos recursivos são aplicados em problemas com uma \emph{estrutura recursiva}.
+
+\begin{ex}[Soma]\index{Recursão!Soma}
+Calcule a soma dos elementos do vetor $A[\un]$ recursivamente, $n \mai 0$.
+\end{ex}
+
+\begin{sol}
+\footnote{\texttt{http://en.wikibooks.org/wiki/LaTeX/Algorithms\_and\_Pseudocode\#While-loops}}
+\begin{algorithm}
+\caption*{Soma elementos do vetor}
+\begin{algorithmic}[1]
+\Function{Soma}{A,n}
+\If {$n = 0$}
+  \State \Return $0$
+\Else
+  \State \Return \texttt{Soma(A,n-1) + A[n]}
+\EndIf
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\
+
+Aplicando a recursão no final de $A$. ($A[k \ldots n]$)
+
+\begin{algorithm}
+\caption*{Soma recursiva}
+\begin{algorithmic}[1]
+\Function{Soma2}{A,k,n}
+\If {$k > n$}
+    \State \Return $0$
+\Else
+    \State \Return \texttt{Soma2(A,k+1,n) + A[k]}
+\EndIf
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\end{sol}
+
+\newpage 
+
+\begin{ex}[Máximo de um vetor]
+Escreva um algoritmo iterativo e um recursivo para o seguinte problema: encontrar o valor de um maior elemento do vetor $A[\un]$.
+\end{ex}
+
+\begin{sol}
+\textbf{Algoritmo iterativo}
+\index{Máximo}
+
+\begin{algorithm}
+\caption*{Máximo}
+\begin{algorithmic}[1]
+\Function{Max}{A,n}
+\State $x \gets A[1]$
+\For{i}{2}{n}
+  \If {$A[i] > x$}
+    \State {$x \gets A[i]$}
+  \EndIf
+  \State {\Return $x$}
+\EndFor
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+
+\textbf{Algoritmo recursivo}
+\index{Recursão!Máximo}
+
+\begin{algorithm}
+\caption*{Máximo recursivo}
+\begin{algorithmic}[1]
+\Function{MaxRec}{A,n}
+  \If {$n = 1$}
+    \State \Return $A[1]$
+  \Else
+    \State {$x \gets$ \texttt{MaxRec(A,n-1)}}
+    \If {$A[n] > x$}
+	\State \Return $A[n]$
+    \Else
+	\State \Return $x$
+    \EndIf
+  \EndIf
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\end{sol}
+
+\newpage 
+
+\begin{ex}[Busca simples em vetor]
+Escreva um algoritmo iterativo e recursivo para resolver o problema de busca simples no vetor $A[\un]$.
+\end{ex}
+
+\begin{sol}
+\textbf{Algoritmo iterativo}
+
+\begin{algorithm}
+\caption*{Busca iterativa}
+\begin{algorithmic}[1]
+\Function{Busca}{A,n,x}
+  \State {$i \gets 1$}
+  \While{$i \mei n$ e $A[i] \ne x$}
+    \State $i \gets i + 1$
+    \If {$i > n$}
+      \State \Return nao
+    \Else
+      \State \Return sim
+    \EndIf
+  \EndWhile
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Algoritmo recursivo}
+\index{Recursão!Busca}
+
+\begin{algorithm}
+\caption*{Busca recursiva}
+\begin{algorithmic}[1]
+\Function{BuscaRec}{A,n,x}
+  \If{$n = 0$}
+    \State \Return nao
+    \Else
+      \If{$A[n] = x$}
+	\State \Return sim
+      \Else
+	\State \Return \texttt{BuscaRec(A,n-1,x)}
+      \EndIf
+  \EndIf
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+Uma outra forma de busca pode ser dividindo o vetor ao meio. Considere $n = 2^i$.
+
+Considere um vetor onde o 1º elemento é $k$ e o ultimo é $n$.
+
+Note que o tamanho do vetor é $n - k + 1$.
+
+\newpage 
+
+\begin{algorithm}
+\caption*{Busca recursiva dividindo o vetor ao meio}
+\begin{algorithmic}[1]
+\Function{BuscaRec2}{A,k,n,x}
+  \If {$n - k + 1 = 0$}
+    \Else
+      \If {$A[n] = x$}
+	\State \Return sim
+      \Else
+	\State \Return nao
+      \EndIf
+    \State \Return \texttt{(BuscaRec(A,k,k + $\frac{n-k+1}{2} - 1$,x))}
+    \State \texttt{BuscaRec(A,k + $\frac{n-k+1}{2}$,n,x)}
+  \EndIf
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\end{sol}
+
+\begin{ex}[Remoção em um vetor]\index{Recursão!Remoção}
+Remoção em um vetor $A[\un]$.
+\end{ex}
+
+\begin{sol}
+
+\begin{algorithm}
+\caption*{Remoção recursiva}
+\begin{algorithmic}[1]
+\Function{RemoveRec}{A,k,n}
+  \If {$k = n$}
+    \State \Return $n-1$
+  \Else
+    \State $A[k] \gets A[k+1]$
+  \EndIf
+  \State \Return \texttt{RemoveRec(A,k+1,n)}
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\end{sol}
+
+\newpage 
+
+\begin{ex}[Inserção]\index{Recursão!Inserção}
+Inserção em um vetor $A[\un]$.
+\end{ex}
+
+\begin{sol}
+
+\begin{algorithm}
+\caption*{Inserção recursiva}
+\begin{algorithmic}[1]
+\Function{InsereRec}{k,y,A,n}
+  \If {$k = n + 1$}
+    \State $A[n+1] = y$
+  \Else
+    \State $A[n+1] = A[n]$
+  \EndIf
+  \State \texttt{InsereRec(k,y,A,n-1)}
+  \State \Return $n + 1$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\end{sol}
+
+\section{Exercícios}
+
+\begin{eex}[Fatorial]\index{Recursão!Fatorial}
+Escreva um algoritmo recursivo que recebe um valor inteiro $n$ e devolve $n!$.
+
+\begin{equation*}
+  n! = 
+  \begin{cases}
+    \hfill 1 	& \mbox{, se } n = 0 \\
+    \hfill n*(n - 1) 	& \mbox{, se } n > 0
+  \end{cases}
+\end{equation*}
+
+\end{eex}
+
+\begin{sol}
+
+\begin{algorithmic}[1]
+\Function{Fatorial}{n}
+  \If {$n = 0$}
+    \State \Return $1$
+  \Else
+    \State \Return $n * $ \texttt{Fatorial(n - 1)}
+  \EndIf
+\EndFunction
+\end{algorithmic}
+
+\end{sol}
+
+\newpage 
+
+\begin{eex}[Fibonacci]\index{Recursão!Fibonacci}
+Escreva um algoritmo recursivo que recebe um valor inteiro $n$ e devolve \texttt{fib(n)}, onde
+
+\begin{equation*}
+  \texttt{fib(n)} =
+  \begin{cases}
+     \qquad \qquad 0 	& \mbox{, se } n = 0 \\
+     \qquad \qquad 1 	& \mbox{, se } n = 1 \\
+    \hfill \texttt{fib(n - 1)} + \texttt{fib(n - 2)} 	& \mbox{, se } n > 1
+  \end{cases}
+\end{equation*}
+
+\end{eex}
+
+\begin{sol}
+ 
+\begin{algorithmic}[1]
+\Function{fib}{n}
+  \If {$n = 0$}
+    \State \Return $0$
+  \Else
+    \If {$n = 1$}
+      \State \Return $1$
+    \Else
+      \State \Return \texttt{fib(n - 1) + fib(n - 2)}
+    \EndIf
+  \EndIf
+\EndFunction
+\end{algorithmic}
+
+\end{sol}
+
+\begin{eex}[Torre de Hanói]\index{Recursão!Torre de Hanói}
+O problema consiste de três pinos \emph{Origem, auxiliar, destino} e uma torre com $n$ discos no pino \emph{Origem} para o pino \emph{Destino} usando o pino \emph{Auxiliar} como auxiliar.
+\end{eex}
+
+\begin{sol}
+
+\begin{algorithmic}[1]
+\Function{moveTorre}{n,origem,destino,auxiliar}
+  \If {$n = 1$}
+    \State escreva ``mova disco de '', \texttt{origem}, ``para '', \texttt{destino}
+  \Else
+    \State \texttt{moveTorre(n - 1,origem,auxiliar,destino)}
+    \State escreva ``mova disco de '', \texttt{origem}, ``para '', \texttt{destino}
+    \State \texttt{moveTorre(n - 1,auxiliar,destino,origem)}
+  \EndIf
+\EndFunction
+\end{algorithmic}
+
+\end{sol}
+
+\newpage 
+
+\section{Ordenação}
+
+\begin{ex}
+Rearranjar um vetor de inteiros $a[\un]$ de modo que ele fique em ordem crescente.
+\end{ex}
+
+
+\begin{sol}
+\index{Ordenação por!Inserção}
+
+\begin{algorithm}
+\caption*{Ordenação por Inserção}
+\begin{algorithmic}[1]
+\Function{OrdenacaoInser}{A,n}
+\For{j}{2}{n} \Comment{$n$}
+  \State {$x \gets a[j]$} \Comment{$n - 1$}
+  \State {$i \gets j - 1$} \Comment{$n - 1$}
+  \While {$i > 0$ e $A[i] > x$} \Comment{$\frac{(n - 1)(n - 2)}{2}$}
+    \State $A[i + 1] \gets A[i]$ \Comment{$\frac{n(n - 1)}{2}$}
+    \State $i \gets i - 1$ \Comment{$\frac{n(n - 1)}{2}$}
+  \EndWhile
+  \State $A[i + 1] \gets x$ \Comment{$n - 1$}
+\EndFor
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+Calculo do tempo:
+
+\[
+\begin{gathered}
+  T(n) = n + n - 1 + n - 1 + \frac{{(n - 1)(n + 2)}}{2} + n(n - 1) + n - 1 \hfill \\
+  T(n) = \frac{3}{2}n^2  + \frac{7}{2}n - 4 \hfill \\ 
+\end{gathered} 
+\]
+
+Mostrar que $T(n) = \Theta(n^2)$.
+\end{sol}
+
+\newpage 
+
+\section{Ordenação por Inserção Recursiva}
+\index{Ordenação por!Inserção Recursiva}
+
+\begin{sol}
+ 
+\begin{algorithm}
+\caption*{Ordenação por Inserção Recursiva}
+\begin{algorithmic}[1]
+\Function{OrdenacaoInserRec}{A,n}
+  \If {$n > 1$} \Comment{$1$}
+    \State \texttt{OrdenacaoInserRec(A,n-1)} \Comment{$T(n - 1)$}
+    \State $x \gets A[n]$  \Comment{$1$}
+    \State $i \gets n - 1$  \Comment{$1$}
+    \While {$i > 0$ e $A[i] > x$} \Comment{$n$}
+      \State $A[i + 1] \gets A[i]$ \Comment{$n - 1$}
+      \State $i \gets i - 1$ \Comment{$n - 1$}
+    \EndWhile
+    \State $A[i + 1] \gets x$ \Comment{$1$}
+  \EndIf
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\[
+\left\{ \begin{gathered}
+  T(1) = 1 \hfill \\
+  T(n) = T(n - 1) + 3n + 2 \hfill \\
+\end{gathered} \right.
+\]
+
+Temos que $T(n) = an^2 + bn + c$.
+
+\begin{center}
+\begin{tabular}{|c*{4}{|c}}
+\hline
+$n$ & $1$ & $2$ & $3$\\ \hline
+$T(n)$ & $1$ & $9$ & $20$\\ \hline
+\end{tabular}
+\end{center}
+
+\[
+\left\{ \begin{gathered}
+  T(1) = a + b + c = 1 \hfill \\
+  T(2) = 4a + 2b + c = 9 \hfill \\
+  T(3) = 9a + 3b + c = 20 \hfill \\ 
+\end{gathered}  \right.
+\]
+
+Resolvendo o sistema linear, temos que $a = \frac{3}{2}, b = \frac{7}{2}$ e $c = -4$.
+
+Portanto, $T(n) = \frac{3}{2}n^2 + \frac{7}{2}n - 4$.
+\end{sol}
+
+\newpage 
+
+\begin{ex}[Ordenação de um vetor de inteiros]\index{Ordenação por!Seleção}
+Considere um algoritmo com a seguinte ideia: no início de cada iteração $A[i \ldots j - 1]$ está em ordem crescente e contém os elementos pequenos de $A$; o vetor $A[j \ldots n]$ contém os elementos grandes. Escreva uma versão iterativa do algoritmo.
+\end{ex}
+
+\begin{sol}
+Dica: suponha um algoritmo que encontre um menor elemento no vetor $A[p \ldots q]$, \texttt{Min(A,p,q)}.
+
+Suponha um algoritmo que troque de posição dois elementos de $A$,\\
+\texttt{Troque(A,p,q)}.
+
+\begin{algorithm}
+\caption*{Ordenação por Seleção}
+\begin{algorithmic}[1]
+\Function{OrdSelec}{A,n} \Comment{$T(n)$}
+  \State $k \gets$ \texttt{Min(A,1,n)} \Comment{$3(n)$}
+  \State \texttt{Troca(A,1,k)} \Comment{$3$}
+  \For{j}{2}{n - 1} \Comment{$n - 1$}
+    \State $k \gets$  \texttt{Min(A,j,n)} \Comment{$\scriptstyle (n - 2)T'(n - j + 1)(n - 2).3(n - j + 1) \mei (n - 2).3n$}
+    \State \texttt{Troca(A,j,k)} \Comment{$(n - 2).3$}
+  \EndFor
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\
+
+\begin{algorithmic}[1]
+\Function{Troca}{A,p,q}
+  \State $x \gets A[p]$
+  \State $A[p] \gets A[q]$
+  \State $A[q] \gets x$
+\EndFunction
+\end{algorithmic}
+
+$T(n) = 3$
+
+\
+
+\begin{algorithmic}[1]
+\Function{Min}{A,p,q} \Comment{$T(n')$}
+  \State $k \gets p$ \Comment{$1$}
+  \For{j}{p + 1}{q} \Comment{$n'$}
+    \If {$A[j] < A[k]$} \Comment{$n' - 1$}
+      \State $k \gets j$ \Comment{$n' - 1$}
+    \EndIf
+    \State \Return $k$ \Comment{$1$}
+  \EndFor
+\EndFunction
+\end{algorithmic}
+
+$T(n') = 3n'$
+
+\
+
+Então,
+
+\[
+\begin{gathered}
+  T(n) \mei 3n + 3 + n - 1 + 3n^2  - 6n + 3n - 6 \hfill \\
+  T(n) \mei 3n^2  + n - 4 \hfill \\ 
+\end{gathered} 
+\]
+
+\end{sol}
+
+\newpage
+
+\begin{ex}[Algoritmo MergeSort]\index{Ordenação por!MergeSort}
+Ordenar um vetor de inteiros $A[p \ldots r]$.
+\end{ex}
+
+\begin{sol}
+
+\begin{algorithm}
+\caption*{MergeSort}
+\begin{algorithmic}[1]
+\Function{MergeSort}{A,p,r}		\Comment{$T'(n)$}
+  \If {$p < r$}				\Comment{$1$}
+    \State $q \gets \left\lfloor {\frac{{p + r}}{2}} \right\rfloor$\Comment{$1$}
+    \State \texttt{MergeSort(A,p,q)}	
+\Comment{$T'(\left\lceil {{\raise0.5ex\hbox{$\scriptstyle n$}
+\kern-0.1em/\kern-0.15em
+\lower0.25ex\hbox{$\scriptstyle 2$}}} \right\rceil )$}
+    \State \texttt{MergeSort(A,q+1,r)}
+\Comment{$T'(\left\lfloor {{\raise0.5ex\hbox{$\scriptstyle n$}
+\kern-0.1em/\kern-0.15em
+\lower0.25ex\hbox{$\scriptstyle 2$}}} \right\rfloor )$}
+    \State \texttt{Intercala(A,p,q,r)}	\Comment{$6n + 5$}
+  \EndIf
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\
+
+\begin{algorithmic}[1]
+\Function{Intercala}{A,p,q,r}		\Comment{$T(n)$}
+  \For{i}{p}{q}				\Comment{$n + 2$}
+    \State $B[i] \gets A[i]$		\Comment{$n$}
+  \EndFor
+  \For{j}{q+1}{r}
+    \State $B[r + q + 1 - j] \gets A[j]$
+  \EndFor
+  \State $i \gets p$			\Comment{$1$}
+  \State $j \gets r$			\Comment{$1$}
+  \For{k}{p}{r}				\Comment{$n + 1$}
+    \If {$B[i] \mei B[j]$}		\Comment{$n$}
+      \State $A[k] \gets B[i]$		\Comment{$2n$}
+      \State $i \gets i + 1$
+    \Else
+      \State $A[k] \gets B[j]$
+      \State $j \gets j - 1$
+    \EndIf
+  \EndFor
+\EndFunction
+\end{algorithmic}
+
+$T(n) = 6n + 5$.
+
+\[
+\left\{ \begin{gathered}
+  T'(1) = 1 \hfill \\
+  T'(n) = T'\left( {\left\lceil {{\raise0.5ex\hbox{$\scriptstyle n$}
+\kern-0.1em/\kern-0.15em
+\lower0.25ex\hbox{$\scriptstyle 2$}}} \right\rceil } \right) + T'\left( {\left\lfloor {{\raise0.5ex\hbox{$\scriptstyle n$}
+\kern-0.1em/\kern-0.15em
+\lower0.25ex\hbox{$\scriptstyle 2$}}} \right\rfloor } \right) + 6n + 7 \hfill \\ 
+\end{gathered}  \right.
+\]
+
+Depois de simplificar $T'$, temos
+
+\[
+\begin{gathered}
+  T'(n) = 2T'\left( {{\raise0.5ex\hbox{$\scriptstyle n$}
+\kern-0.1em/\kern-0.15em
+\lower0.25ex\hbox{$\scriptstyle 2$}}} \right) + 6n + 7 \hfill \\
+  T'(n) \mei cn\lg n,n \mai n_0  \hfill \\ 
+\end{gathered} 
+\]
+
+\begin{center}
+\begin{tabular}{|c*{4}{|c}}
+\hline
+$n$ & $1$ & $2$ & $3$\\ \hline
+$T'(n)$ & $1$ & $21$ & $47$\\ \hline
+\end{tabular}
+\end{center}
+
+Temos, $T'(n) \mei 16 n \lg n$
+\end{sol}
+
+\begin{ex}[Algoritmo QuickSort]\index{Ordenação por!QuickSort}
+Ordenar um vetor de inteiros $A[p \ldots r]$. Usar a estratégia de divisão e conquista.
+\end{ex}
+
+\begin{sol}
+
+\begin{algorithm}
+\caption*{Separe}
+\begin{algorithmic}[1]
+\Function{Separe}{A,p,r}		\Comment{$T(n) = 5n + 9$}
+  \State $x \gets A[p]$
+  \State $i \gets p - 1$
+  \State $j \gets r + 1$
+  \While {$0 = 0$}
+    \Repeat
+      \State $j \gets j - 1$
+    \Until $A[j] \mei x$
+    \Repeat
+      \State $i \gets i + 1$
+    \Until $A[i] \mei x$
+    \If {$i < j$}
+      \State \texttt{Troca(A,i,j)}
+    \Else
+      \State \Return $j$
+    \EndIf
+  \EndWhile
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption*{QuickSort}
+\begin{algorithmic}[1]
+\Function{QuickSort}{A,p,r}
+  \If {$p < r$}
+    \State $q \gets$ \texttt{Separe(A,p,r)}
+    \State \texttt{QuickSort(A,p,q)}
+    \State \texttt{QuickSort(A,q+1,r)}
+  \EndIf
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\end{sol}
+
+\chapter*{Exemplos de Pseudocódigo no \LaTeX}
+
+\begin{algorithm}
+\caption*{Valor Absoluto}
+\begin{algorithmic}[1]
+\Function{Absoluto}{x}
+\If {$x < 0$}
+    \State \Return $-x$
+\Else
+    \State \Return $x$
+\EndIf
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption*{Exemplo do \texttt{for}}
+\begin{algorithmic}[1]
+\For{i}{1}{n}
+  \State {$A[i] \gets i + 1$} \Comment{Preenche o vetor}
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption*{Exemplo do \texttt{while}}
+\begin{algorithmic}[1]
+\While {$i \mei n$}
+  \State $i \gets i + 1$
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+
+
+%***********************************************
+\bibliographystyle{abbrv}
+\bibliography{../../senac/refs}
+
+\printindex
+
+\end{document}
